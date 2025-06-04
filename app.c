@@ -25,6 +25,7 @@ uint8_t read_temp(int32_t *out_temp) {
       if(!(msg.status & HDL_I2C_MESSAGE_STATUS_COMPLETE)) break;
       if(msg.status & (HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST | HDL_I2C_MESSAGE_FAULT_BUS_ERROR | HDL_I2C_MESSAGE_FAULT_BAD_STATE | HDL_I2C_MESSAGE_STATUS_NACK)) {
         sensor_driver_state = 0;
+        hdl_give(&mod_i2c, (void*)1);
         break;
       }
       sensor_driver_state++;
@@ -40,10 +41,11 @@ uint8_t read_temp(int32_t *out_temp) {
     default: {
       temp_buf = swap_bytes(temp_buf);
       //if(!(temp_buf & 1)) temp_buf >>= 1;
-      temp_buf /= 8;
+      temp_buf /= 16;
       int32_t res = (625L * (int32_t)(temp_buf + 880)) - 550000L;
       if(out_temp != NULL) *out_temp = res;
       hdl_give(&mod_i2c, (void*)1);
+      sensor_driver_state = 0;
       return HDL_TRUE;
     }
   }
@@ -106,6 +108,7 @@ uint8_t read_axel(axel_data_t *out_data) {
       if(!(msg.status & HDL_I2C_MESSAGE_STATUS_COMPLETE)) break;
       if(msg.status & (HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST | HDL_I2C_MESSAGE_FAULT_BUS_ERROR | HDL_I2C_MESSAGE_FAULT_BAD_STATE | HDL_I2C_MESSAGE_STATUS_NACK)) {
         sensor_driver_state = 0;
+        hdl_give(&mod_i2c, (void*)2);
         break;
       }
       sensor_driver_state++;
@@ -144,7 +147,7 @@ void main() {
 
   /* gpio exapmle */
   hdl_gpio_set_active(&mod_sns_pwr_pin);
-  hdl_gpio_set_active(&mod_acc_pwr_pin);
+  // hdl_gpio_set_active(&mod_acc_pwr_pin);
 
   /* storage write exapmle */
   uint8_t store[] = "Hello world";
@@ -154,7 +157,9 @@ void main() {
     .buffer = store,
     .options = HDL_NVM_OPTION_WRITE
   };
-  hdl_nvm_transfer(&mod_storage, &storage_message);
+  storage_message.status = HDL_NVM_STATE_COMPLETE;
+
+//  hdl_nvm_transfer(&mod_storage, &storage_message);
 
   /* uart read&write exapmle */
   stream_test(uart_stream_init());
@@ -169,14 +174,14 @@ void main() {
     (void)adc_age; (void)current; (void)voltage;
 
     /* i2c temp sns exapmle */
-    if(read_temp(&temp)) {
-      __NOP();
-    }
+     if(read_temp(&temp)) {
+       __NOP();
+     }
 
     /* i2c axel sns exapmle */
-    if(read_axel(&axel)) {
-      __NOP();
-    }
+    // if(read_axel(&axel)) {
+    //   __NOP();
+    // }
 
     /* storage result & read restart exapmle */
     if(storage_message.status & HDL_NVM_STATE_COMPLETE) {

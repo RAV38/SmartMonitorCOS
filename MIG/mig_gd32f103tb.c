@@ -766,6 +766,11 @@ hdl_gpio_pin_hw_config_t mod_gpio_alternate_od_slow_mode = {
   .ospeed = GPIO_OSPEED_2MHZ
 };
 
+hdl_gpio_pin_hw_config_t mod_gpio_alternate_od_fast_mode = {
+  .type = GPIO_MODE_AF_OD,
+  .ospeed = GPIO_OSPEED_50MHZ
+};
+
 hdl_gpio_pin_hw_config_t mod_gpio_alternate_pp_fast_mode = {
   .type = GPIO_MODE_AF_PP,
   .ospeed = GPIO_OSPEED_50MHZ
@@ -935,7 +940,7 @@ const hdl_gpio_pin_t mod_gpio_pb6_scl = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
-    .hwc = &mod_gpio_alternate_od_slow_mode, 
+    .hwc = &mod_gpio_alternate_od_fast_mode, 
     .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_6)
 }; //(PB6)
@@ -945,7 +950,7 @@ const hdl_gpio_pin_t mod_gpio_pb7_sda = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
-    .hwc = &mod_gpio_alternate_od_slow_mode, 
+    .hwc = &mod_gpio_alternate_od_fast_mode, 
     .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_7)
 }; //(PB7)
